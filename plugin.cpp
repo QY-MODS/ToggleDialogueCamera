@@ -1,5 +1,6 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include "logger.h"
+//https://github.com/aspck/SkyrimVR-CommonLib-Example
 #include "customEventSink.h"
 
 RE::UI* ui = nullptr;
@@ -9,6 +10,7 @@ constexpr std::uint32_t first_person_keyboard = 33;
 bool PostPostLoaded = false;
 bool InputLoaded = false;
 
+//https://github.com/SkyrimDev/
 class OurEventSink : public RE::BSTEventSink<RE::InputEvent*> {
     OurEventSink() = default;
     OurEventSink(const OurEventSink&) = delete;
