@@ -12,3 +12,21 @@ void SetupLog() {
     spdlog::flush_on(spdlog::level::trace);
     logger::info("Name of the plugin is {}.", pluginName);
 }
+
+
+void PrintToConsole(SKSE::MessagingInterface::Message* message) {
+    switch (message->type) {
+        case SKSE::MessagingInterface::kDataLoaded:
+            break;
+        case SKSE::MessagingInterface::kNewGame:
+            break;
+        case SKSE::MessagingInterface::kPostLoad:
+            break;
+        case SKSE::MessagingInterface::kPostPostLoad:
+            logger::info("PostPostLoad");
+            break;
+        case SKSE::MessagingInterface::kPostLoadGame:
+            logger::info("PostLoadGame");
+            break;
+    }
+};
