@@ -1,7 +1,7 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include "logger.h"
-//https://github.com/aspck/SkyrimVR-CommonLib-Example
-#include "customEventSink.h"
+////https://github.com/aspck/SkyrimVR-CommonLib-Example
+//#include "customEventSink.h"
 
 RE::UI* ui = nullptr;
 RE::PlayerCamera* player_cam = nullptr;
@@ -16,11 +16,11 @@ bool InputLoaded = false;
 
 void ToggleDialogueCam(RE::PlayerCamera* plyr_c) {
     if (plyr_c->IsInFirstPerson()) {
-        logger::info("Player is in 1st person.");
+        //logger::info("Player is in 1st person.");
         plyr_c->ForceThirdPerson();
     } else if (plyr_c->IsInThirdPerson()) {
         plyr_c->ForceFirstPerson();
-        logger::info("Player is in 3rd person.");
+        //logger::info("Player is in 3rd person.");
     } else {
         logger::info("Player is in neither 1st nor 3rd person.");
     }
@@ -61,9 +61,6 @@ public:
         } else if (_device == 2 && dxScanCode == toggle_code_gamepad) {
 		    _toggle = true;
         }
-        else if (_device == 1) {
-		    logger::info("Key pressed: {}", dxScanCode);
-		}
         if (_toggle) {
             player_cam = RE::PlayerCamera::GetSingleton();
             ToggleDialogueCam(player_cam);
