@@ -6,6 +6,8 @@ RE::UI* ui = nullptr;
 RE::PlayerCamera* player_cam = nullptr;
 const std::string_view& dialogue_menu_str = "Dialogue Menu";
 constexpr std::uint32_t first_person_keyboard = 33;
+bool PostPostLoaded = false;
+bool InputLoaded = false;
 
 class OurEventSink : public RE::BSTEventSink<RE::InputEvent*> {
     OurEventSink() = default;
@@ -55,10 +57,16 @@ public:
 void OnMessage(SKSE::MessagingInterface::Message* message) {
     switch (message->type) {
         case SKSE::MessagingInterface::kInputLoaded:
-            RE::BSInputDeviceManager::GetSingleton()->AddEventSink(OurEventSink::GetSingleton());
+            if (!InputLoaded) {
+                RE::BSInputDeviceManager::GetSingleton()->AddEventSink(OurEventSink::GetSingleton());
+				InputLoaded = true;
+			}
             break;
         case SKSE::MessagingInterface::kPostPostLoad:
-            ui = RE::UI::GetSingleton();
+            if (!PostPostLoaded) {
+                ui = RE::UI::GetSingleton();
+				PostPostLoaded = true;
+			}
             break;
     }
 };
