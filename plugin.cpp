@@ -32,8 +32,8 @@ public:
             auto* buttonEvent = event->AsButtonEvent();
             auto dxScanCode = buttonEvent->GetIDCode();
             auto _heldDownSecs = buttonEvent->heldDownSecs;
-            player_cam = RE::PlayerCamera::GetSingleton();
             if (dxScanCode == first_person_keyboard && buttonEvent->IsUp()) {
+                player_cam = RE::PlayerCamera::GetSingleton();
                 if (player_cam->IsInFirstPerson()) {
                     logger::info("Player is in 1st person.");
                     player_cam->ForceThirdPerson();
@@ -46,6 +46,7 @@ public:
                 }
                 player_cam = nullptr;
                 logger::info("Pressed key {} for {} seconds", dxScanCode, _heldDownSecs);
+                
 			}
         }
 
