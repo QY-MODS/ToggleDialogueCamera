@@ -5,10 +5,26 @@
 
 RE::UI* ui = nullptr;
 RE::PlayerCamera* player_cam = nullptr;
+RE::PlayerControls* player_controls = nullptr;
+RE::BSInputDeviceManager* input_device_manager = nullptr;
+bool _usingGamepad = false;
 const std::string_view& dialogue_menu_str = "Dialogue Menu";
-constexpr std::uint32_t first_person_keyboard = 33;
+constexpr std::uint32_t toggle_code_keyboard = 33;
+constexpr std::uint32_t toggle_code_gamepad = 128;
 bool PostPostLoaded = false;
 bool InputLoaded = false;
+
+void ToggleDialogueCam(RE::PlayerCamera* plyr_c) {
+    if (plyr_c->IsInFirstPerson()) {
+        logger::info("Player is in 1st person.");
+        plyr_c->ForceThirdPerson();
+    } else if (plyr_c->IsInThirdPerson()) {
+        plyr_c->ForceFirstPerson();
+        logger::info("Player is in 3rd person.");
+    } else {
+        logger::info("Player is in neither 1st nor 3rd person.");
+    }
+};
 
 //https://github.com/SkyrimDev/
 class OurEventSink : public RE::BSTEventSink<RE::InputEvent*> {
@@ -30,26 +46,28 @@ public:
         auto* event = *eventPtr;
         if (!event) return RE::BSEventNotifyControl::kContinue;
 
-        if (event->GetEventType() == RE::INPUT_EVENT_TYPE::kButton && ui->IsMenuOpen(dialogue_menu_str)) {
-            auto* buttonEvent = event->AsButtonEvent();
-            auto dxScanCode = buttonEvent->GetIDCode();
-            auto _heldDownSecs = buttonEvent->heldDownSecs;
-            if (dxScanCode == first_person_keyboard && buttonEvent->IsUp()) {
-                player_cam = RE::PlayerCamera::GetSingleton();
-                if (player_cam->IsInFirstPerson()) {
-                    logger::info("Player is in 1st person.");
-                    player_cam->ForceThirdPerson();
-                }
-                else if (player_cam->IsInThirdPerson()) {
-					player_cam->ForceFirstPerson();
-                    logger::info("Player is in 3rd person.");
-                } else {
-                    logger::info("Player is in neither 1st nor 3rd person.");
-                }
-                player_cam = nullptr;
-                logger::info("Pressed key {} for {} seconds", dxScanCode, _heldDownSecs);
-                
-			}
+        if (!(ui->IsMenuOpen(dialogue_menu_str))) return RE::BSEventNotifyControl::kContinue;
+        if (event->GetEventType() != RE::INPUT_EVENT_TYPE::kButton) return RE::BSEventNotifyControl::kContinue;
+        auto* buttonEvent = event->AsButtonEvent();
+        if (!(buttonEvent->IsUp())) return RE::BSEventNotifyControl::kContinue;
+        bool _toggle = false;
+        auto dxScanCode = buttonEvent->GetIDCode();
+        
+        // 0 = keyboard,1 = mouse,  2 = gamepad
+        int _device = event->GetDevice();
+        
+        if (_device == 0 && dxScanCode == toggle_code_keyboard) {
+             _toggle = true;
+        } else if (_device == 2 && dxScanCode == toggle_code_gamepad) {
+		    _toggle = true;
+        }
+        else if (_device == 1) {
+		    logger::info("Key pressed: {}", dxScanCode);
+		}
+        if (_toggle) {
+            player_cam = RE::PlayerCamera::GetSingleton();
+            ToggleDialogueCam(player_cam);
+            player_cam = nullptr;
         }
 
         return RE::BSEventNotifyControl::kContinue;
@@ -61,7 +79,8 @@ void OnMessage(SKSE::MessagingInterface::Message* message) {
     switch (message->type) {
         case SKSE::MessagingInterface::kInputLoaded:
             if (!InputLoaded) {
-                RE::BSInputDeviceManager::GetSingleton()->AddEventSink(OurEventSink::GetSingleton());
+                input_device_manager = RE::BSInputDeviceManager::GetSingleton();
+                input_device_manager->AddEventSink(OurEventSink::GetSingleton());
 				InputLoaded = true;
 			}
             break;
