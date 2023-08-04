@@ -20,7 +20,18 @@ private:
 };
 void OnCameraUpdate::Update(RE::TESCamera* a_camera) {
     _Update(a_camera);
-    if (toggle_pressed) {
+    if (toggle_pressed && RE::PlayerCamera::GetSingleton()->IsInThirdPerson()) {
+        logger::info("In Hook.");
+        auto* thirdPersonState = static_cast<RE::ThirdPersonState*>(a_camera->currentState.get());
+        logger::info("savedZoomOffset: {} pitchZoomOffset: {}, currentZoomOffset: {}, targetZoomOffset: {}",
+                     thirdPersonState->savedZoomOffset, thirdPersonState->pitchZoomOffset,
+                     thirdPersonState->currentZoomOffset, thirdPersonState->targetZoomOffset);
+        if (thirdPersonState->currentZoomOffset != 0.0f) {
+            thirdPersonState->targetZoomOffset = 0.0f;
+        }
+        toggle_pressed = false;
+    }
+    //if (toggle_pressed) {
         /*logger::info("{} {} {}", a_camera->cameraRoot->local.translate.x, a_camera->cameraRoot->local.translate.y,
                      a_camera->cameraRoot->local.translate.z);
         logger::info("{} {} {}", a_camera->cameraRoot->local.rotate.entry[0][0],
@@ -29,7 +40,7 @@ void OnCameraUpdate::Update(RE::TESCamera* a_camera) {
         RE::NiUpdateData updateData;
         a_camera->cameraRoot->UpdateDownwardPass(updateData, 0);*/
         //toggle_pressed = false;
-    }
+    //}
 }
 
 RE::UI* ui = nullptr;
@@ -42,10 +53,10 @@ constexpr std::uint32_t toggle_code_gamepad = 128;
 bool PostPostLoaded = false;
 bool InputLoaded = false;
 
-float GetZoomDistance(RE::PlayerCamera* plyr_c) {
-    plyr_c->cameraRoot->local.translate;
-    return 0;
-}
+//float GetZoomDistance(RE::PlayerCamera* plyr_c) {
+//    plyr_c->cameraRoot->local.translate;
+//    return 0;
+//}
     //void ToggleDialogueCam(RE::PlayerCamera* plyr_c) {
 //    if (plyr_c->IsInFirstPerson()) {
 //        // logger::info("Player is in 1st person.");
