@@ -1,11 +1,36 @@
-#include <spdlog/sinks/basic_file_sink.h>
 #include "logger.h"
-////https://github.com/aspck/SkyrimVR-CommonLib-Example
-//#include "customEventSink.h"
 
+
+bool toggle_pressed = false;
+float last_zoom = 0;
+
+class OnCameraUpdate {
+public:
+    static void Install() {
+        REL::Relocation<std::uintptr_t> hook1{REL::RelocationID(49852, 50784)};  // 84AB90, 876700
+
+        auto& trampoline = SKSE::GetTrampoline();
+        trampoline.create(16);
+        _Update = trampoline.write_call<5>(hook1.address() + REL::Relocate(0x1A6, 0x1A6),
+                                           Update);  // 84AD36, 8768A6
+    }
+
+private:
+    static void Update(RE::TESCamera* a_this);
+
+    static inline REL::Relocation<decltype(Update)> _Update;
+};
+void OnCameraUpdate::Update(RE::TESCamera* a_camera) {
+    _Update(a_camera);
+    if (toggle_pressed) {
+        auto* thirdPersonState = static_cast<RE::ThirdPersonState*>(a_camera->currentState.get());
+        thirdPersonState->targetZoomOffset = last_zoom;
+        toggle_pressed = false;
+        last_zoom = 0;
+    }
+}
 RE::UI* ui = nullptr;
 RE::PlayerCamera* player_cam = nullptr;
-RE::PlayerControls* player_controls = nullptr;
 RE::BSInputDeviceManager* input_device_manager = nullptr;
 const std::string_view& dialogue_menu_str = "Dialogue Menu";
 constexpr std::uint32_t toggle_code_keyboard = 33;
@@ -15,11 +40,20 @@ bool InputLoaded = false;
 
 void ToggleDialogueCam(RE::PlayerCamera* plyr_c) {
     if (plyr_c->IsInFirstPerson()) {
-        //logger::info("Player is in 1st person.");
+        if (!last_zoom) {
+            auto thirdPersonState =
+                static_cast<RE::ThirdPersonState*>(plyr_c->cameraStates[RE::CameraState::kThirdPerson].get());
+            last_zoom = thirdPersonState->savedZoomOffset;
+        }
         plyr_c->ForceThirdPerson();
+        toggle_pressed = true;
     } else if (plyr_c->IsInThirdPerson()) {
+        if (!last_zoom) {
+            auto thirdPersonState =
+                static_cast<RE::ThirdPersonState*>(plyr_c->cameraStates[RE::CameraState::kThirdPerson].get());
+            last_zoom = thirdPersonState->currentZoomOffset;
+        }
         plyr_c->ForceFirstPerson();
-        //logger::info("Player is in 3rd person.");
     } else {
         logger::info("Player is in neither 1st nor 3rd person.");
     }
@@ -94,6 +128,7 @@ SKSEPluginLoad(const SKSE::LoadInterface *skse) {
     SetupLog();
     SKSE::Init(skse);
     SKSE::GetMessagingInterface()->RegisterListener(OnMessage);
+    OnCameraUpdate::Install();
     
     return true;
 }
