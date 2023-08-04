@@ -1,3 +1,5 @@
+#include <spdlog/sinks/basic_file_sink.h>
+#include "PCH.h"
 namespace logger = SKSE::log;
 
 void SetupLog() {
@@ -30,3 +32,6 @@ void PrintToConsole(SKSE::MessagingInterface::Message* message) {
             break;
     }
 };
+
+void LogNP3(RE::NiPoint3 np) { logger::info("({},{},{})", np.x, np.y, np.z); }
+void LogNP4(RE::NiQuaternion np) { logger::info("({},{},{},{})", np.w,np.x, np.y, np.z); }
