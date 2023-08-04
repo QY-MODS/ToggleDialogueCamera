@@ -13,15 +13,14 @@ void ToggleDialogueCam(RE::PlayerCamera* plyr_c) {
     if (plyr_c->IsInFirstPerson()) {
         auto thirdPersonState =
             static_cast<RE::ThirdPersonState*>(plyr_c->cameraStates[RE::CameraState::kThirdPerson].get());
-        float last_zoom = thirdPersonState->savedZoomOffset;
         plyr_c->ForceThirdPerson();
-        thirdPersonState->targetZoomOffset = last_zoom;
+        thirdPersonState->targetZoomOffset = thirdPersonState->savedZoomOffset;
+        ;
     } else if (plyr_c->IsInThirdPerson()) {
         auto thirdPersonState =
             static_cast<RE::ThirdPersonState*>(plyr_c->cameraStates[RE::CameraState::kThirdPerson].get());
-        float last_zoom = thirdPersonState->currentZoomOffset;
+        thirdPersonState->savedZoomOffset = thirdPersonState->currentZoomOffset;
         plyr_c->ForceFirstPerson();
-        thirdPersonState->savedZoomOffset = last_zoom;
     } else {
         logger::info("Player is in neither 1st nor 3rd person.");
     }
