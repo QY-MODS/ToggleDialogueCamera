@@ -1,4 +1,4 @@
-set(wildlander_output true)
+set(wildlander_output false)
 set(steam_owrt_output false)
 set(steam_mods_output true)
 # It's recommended to set a minimum CMake version.

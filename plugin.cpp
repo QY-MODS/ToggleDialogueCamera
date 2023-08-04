@@ -2,7 +2,6 @@
 
 RE::UI* ui = nullptr;
 RE::PlayerCamera* player_cam = nullptr;
-RE::BSInputDeviceManager* input_device_manager = nullptr;
 const std::string_view& dialogue_menu_str = "Dialogue Menu";
 constexpr std::uint32_t toggle_code_keyboard = 33;
 constexpr std::uint32_t toggle_code_gamepad = 128;
@@ -76,8 +75,7 @@ void OnMessage(SKSE::MessagingInterface::Message* message) {
     switch (message->type) {
         case SKSE::MessagingInterface::kInputLoaded:
             if (!InputLoaded) {
-                input_device_manager = RE::BSInputDeviceManager::GetSingleton();
-                input_device_manager->AddEventSink(OurEventSink::GetSingleton());
+                RE::BSInputDeviceManager::GetSingleton()->AddEventSink(OurEventSink::GetSingleton());
 				InputLoaded = true;
 			}
             break;
