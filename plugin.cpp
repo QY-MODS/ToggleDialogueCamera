@@ -6,15 +6,15 @@ const std::string_view& dialogue_menu_str = "Dialogue Menu";
 constexpr std::uint32_t toggle_code_kb = 33;
 constexpr std::uint32_t toggle_code_gp = 128;
 const int zoom_enabler_kb = 29;
-const int zoom_enabler_gp = -1;
+const int zoom_enabler_gp = 64;
 constexpr std::uint32_t zoom_in_code_gp = 10;
 constexpr std::uint32_t zoom_out_code_gp = 512;
 constexpr std::uint32_t zoom_in_code_m = 8;
 constexpr std::uint32_t zoom_out_code_m = 9;
+bool zoom_enabled = false;
 
 bool PostPostLoaded = false;
 bool InputLoaded = false;
-bool zoom_enabled = false;
 
 void ToggleDialogueCam(RE::PlayerCamera* plyr_c) {
     auto thirdPersonState = static_cast<RE::ThirdPersonState*>(plyr_c->cameraStates[RE::CameraState::kThirdPerson].get());
@@ -52,14 +52,14 @@ public:
 
         for (RE::InputEvent* e = *evns; e; e = e->next) {
             if (e->eventType.get() == RE::INPUT_EVENT_TYPE::kButton) {
-                bool _toggle = false;
+
+                bool _toggle = false; // switch for 1st/3rd person
 
                 RE::ButtonEvent* a_event = e->AsButtonEvent();
 
                 uint32_t keyMask = a_event->idCode;
                 uint32_t _device = a_event->GetDevice();
                 if (!zoom_enabled) {
-                    zoom_enabled = _device ? zoom_enabler_gp < 0 : zoom_enabler_kb < 0;
                     if (_device == 0 && keyMask != toggle_code_kb && keyMask != zoom_enabler_kb) continue;
                     if (_device == 2 && keyMask != toggle_code_gp && keyMask != zoom_enabler_gp) continue;
                 }
@@ -70,7 +70,7 @@ public:
                 
                 player_cam = RE::PlayerCamera::GetSingleton();
 
-                if (isPressed) {
+                if (isPressed && !(_device ? zoom_enabler_gp < 0 : zoom_enabler_kb < 0)) {  // if zoom is possible
                     if (!zoom_enabled &&  (keyMask == zoom_enabler_kb || keyMask == zoom_enabler_gp)) {
                         zoom_enabled = true;
                         logger::info("Zoom enabled");
