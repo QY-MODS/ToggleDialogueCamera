@@ -3,21 +3,26 @@
 RE::UI* ui = nullptr;
 RE::PlayerCamera* player_cam = nullptr;
 const std::string_view& dialogue_menu_str = "Dialogue Menu";
-constexpr std::uint32_t toggle_code_keyboard = 33;
-constexpr std::uint32_t toggle_code_gamepad = 128;
+constexpr std::uint32_t toggle_code_kb = 33;
+constexpr std::uint32_t toggle_code_gp = 128;
+const int zoom_enabler_kb = 29;
+const int zoom_enabler_gp = -1;
+constexpr std::uint32_t zoom_in_code_gp = 10;
+constexpr std::uint32_t zoom_out_code_gp = 512;
+constexpr std::uint32_t zoom_in_code_m = 8;
+constexpr std::uint32_t zoom_out_code_m = 9;
+
 bool PostPostLoaded = false;
 bool InputLoaded = false;
+bool zoom_enabled = false;
 
 void ToggleDialogueCam(RE::PlayerCamera* plyr_c) {
+    auto thirdPersonState = static_cast<RE::ThirdPersonState*>(plyr_c->cameraStates[RE::CameraState::kThirdPerson].get());
     if (plyr_c->IsInFirstPerson()) {
-        auto thirdPersonState =
-            static_cast<RE::ThirdPersonState*>(plyr_c->cameraStates[RE::CameraState::kThirdPerson].get());
         plyr_c->ForceThirdPerson();
         thirdPersonState->targetZoomOffset = thirdPersonState->savedZoomOffset;
         ;
     } else if (plyr_c->IsInThirdPerson()) {
-        auto thirdPersonState =
-            static_cast<RE::ThirdPersonState*>(plyr_c->cameraStates[RE::CameraState::kThirdPerson].get());
         thirdPersonState->savedZoomOffset = thirdPersonState->currentZoomOffset;
         plyr_c->ForceFirstPerson();
     } else {
@@ -25,6 +30,7 @@ void ToggleDialogueCam(RE::PlayerCamera* plyr_c) {
     }
 };
 
+using InputEvents = RE::InputEvent*;
 //https://github.com/SkyrimDev/
 class OurEventSink : public RE::BSTEventSink<RE::InputEvent*> {
     OurEventSink() = default;
@@ -39,31 +45,69 @@ public:
         return &singleton;
     }
 
-    RE::BSEventNotifyControl ProcessEvent(RE::InputEvent* const* eventPtr, RE::BSTEventSource<RE::InputEvent*>*) {
-        if (!eventPtr) return RE::BSEventNotifyControl::kContinue;
-
-        auto* event = *eventPtr;
-        if (!event) return RE::BSEventNotifyControl::kContinue;
+    RE::BSEventNotifyControl ProcessEvent(const InputEvents* evns, RE::BSTEventSource<InputEvents>*) {
+        if (!*evns) return RE::BSEventNotifyControl::kContinue;
 
         if (!(ui->IsMenuOpen(dialogue_menu_str))) return RE::BSEventNotifyControl::kContinue;
-        if (event->GetEventType() != RE::INPUT_EVENT_TYPE::kButton) return RE::BSEventNotifyControl::kContinue;
-        auto* buttonEvent = event->AsButtonEvent();
-        if (!(buttonEvent->IsUp())) return RE::BSEventNotifyControl::kContinue;
-        bool _toggle = false;
-        auto dxScanCode = buttonEvent->GetIDCode();
-        
-        // 0 = keyboard,1 = mouse,  2 = gamepad
-        int _device = event->GetDevice();
-        
-        if (_device == 0 && dxScanCode == toggle_code_keyboard) {
-             _toggle = true;
-        } else if (_device == 2 && dxScanCode == toggle_code_gamepad) {
-		    _toggle = true;
-        }
-        if (_toggle) {
-            player_cam = RE::PlayerCamera::GetSingleton();
-            ToggleDialogueCam(player_cam);
-            player_cam = nullptr;
+
+        for (RE::InputEvent* e = *evns; e; e = e->next) {
+            if (e->eventType.get() == RE::INPUT_EVENT_TYPE::kButton) {
+                bool _toggle = false;
+
+                RE::ButtonEvent* a_event = e->AsButtonEvent();
+
+                uint32_t keyMask = a_event->idCode;
+                uint32_t _device = a_event->GetDevice();
+                if (!zoom_enabled) {
+                    zoom_enabled = _device ? zoom_enabler_gp < 0 : zoom_enabler_kb < 0;
+                    if (_device == 0 && keyMask != toggle_code_kb && keyMask != zoom_enabler_kb) continue;
+                    if (_device == 2 && keyMask != toggle_code_gp && keyMask != zoom_enabler_gp) continue;
+                }
+
+                float duration = a_event->heldDownSecs;
+                bool isPressed = a_event->value != 0 && duration >= 0;
+                bool isReleased = a_event->value == 0 && duration != 0;
+                
+                player_cam = RE::PlayerCamera::GetSingleton();
+
+                if (isPressed) {
+                    if (!zoom_enabled &&  (keyMask == zoom_enabler_kb || keyMask == zoom_enabler_gp)) {
+                        zoom_enabled = true;
+                        logger::info("Zoom enabled");
+                        continue;
+                    }
+                    if (zoom_enabled) {
+                        if (!player_cam->IsInThirdPerson() || !_device) continue;
+                        auto thirdPersonState = static_cast<RE::ThirdPersonState*>(player_cam->cameraStates[RE::CameraState::kThirdPerson].get());
+                        float zoom_amount = (_device % 2) ? 0.1f : 0.025f;
+                        if (keyMask == zoom_in_code_m && _device == 1 || keyMask == zoom_in_code_gp && _device == 2) {
+                            thirdPersonState->targetZoomOffset =
+                                std::max(thirdPersonState->targetZoomOffset - zoom_amount, -0.2f);
+                            logger::info("Zooming in");
+                        } 
+                        else if (keyMask == zoom_out_code_m && _device == 1 || keyMask == zoom_out_code_gp && _device == 2) {
+                            thirdPersonState->targetZoomOffset =
+                                std::min(thirdPersonState->targetZoomOffset + zoom_amount, 1.0f);
+                            logger::info("Zooming out");
+                        }
+                    }
+                } 
+                else if (isReleased) {
+                    if (keyMask == zoom_enabler_kb || keyMask == zoom_enabler_gp) {
+                        zoom_enabled = false;
+                        logger::info("Zoom disabled");
+                    } 
+                    else if (keyMask == toggle_code_kb || keyMask == toggle_code_gp) {
+                        _toggle = true;
+                    }
+                }
+                if (_toggle) {
+                    logger::info("Toggling camera");
+                    ToggleDialogueCam(player_cam);
+                    _toggle = false;
+                }
+                player_cam = nullptr;
+            } 
         }
 
         return RE::BSEventNotifyControl::kContinue;
