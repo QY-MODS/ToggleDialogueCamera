@@ -1,8 +1,3 @@
-#include "SimpleIni.h"
+#include "Settings.h"
 
-namespace Settings {
-    bool LoadSettings() {
-        return true;
-    }
-
-}
+bool Settings::LoadSettings() { return true; };
