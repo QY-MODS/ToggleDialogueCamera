@@ -4,7 +4,7 @@
 // keyboard-gp & mouse-gp
 using KeyValuePair = std::pair<const char*, int>;
 
-std::array<KeyValuePair, 2> keyboard = {{{"zoom", 29}, {"toggle", 33}}};  // 29 , 33
+std::array<KeyValuePair, 2> keyboard;  // 29 , 33
 std::array<KeyValuePair, 2> mouse = {{{"zoom+", 8}, {"zoom-", 9}}};       // 8 , 9
 std::array<KeyValuePair, 4> gamepad = {
     {{"zoom", 64}, {"toggle", 128}, {"zoom+", 10}, {"zoom-", 512}}};  // 64 , 128 , 10 , 512
@@ -13,7 +13,7 @@ std::array<KeyValuePair, 4> gamepad = {
 namespace Settings {
     
     const std::string_view& dialogue_menu_str = "Dialogue Menu";
-    constexpr auto path = L"Data/SKSE/Plugins/DialogueCameraToasdfasdfggle.ini";
+    constexpr auto path = L"Data/SKSE/Plugins/DialogueCameraToggle.ini";
     constexpr auto comment_zoom = ";Holding this key enables zoom. Set to -1 to disable.";
     constexpr auto comment_toggle = ";Press this key to switch between 1st and 3rd person view. Set to -1 to disable.";
     constexpr auto comment_zoom_plus = ";Key to zoom in. Set to -1 to disable.";
@@ -35,6 +35,8 @@ namespace Settings {
 		int zoom_plus;
 		int zoom_minus;
 	};
+
+    std::array<KeyValuePair, 2> keyboard = {{{"zoom", kb::zoom}, {"toggle", kb::toggle}}};
 
     void Set(CSimpleIniA& ini, const char* section, const char* key, int& val, int def_val, const char* comment){
         val = ini.GetLongValue(section, key, def_val);

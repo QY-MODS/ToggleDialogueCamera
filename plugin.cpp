@@ -84,7 +84,6 @@ public:
         static OurEventSink singleton;
         return &singleton;
     }
-
     RE::BSEventNotifyControl ProcessEvent(const InputEvents* evns, RE::BSTEventSource<InputEvents>*) {
         if (!*evns) return RE::BSEventNotifyControl::kContinue;
 
@@ -153,8 +152,10 @@ void OnMessage(SKSE::MessagingInterface::Message* message) {
 SKSEPluginLoad(const SKSE::LoadInterface* skse) {
     SetupLog();
     SKSE::Init(skse);
-    assert(Settings::LoadSettings() == true && "Could not load settings from ini file!");
-    logger::info("Settings loaded.");
+    auto loaded = Settings::LoadSettings(); 
+    if (loaded) logger::info("Settings loadedasd.");
+    else logger::info("Could not load settings.");
+    assert(loaded && "Could not load settings from ini file!");
     SKSE::GetMessagingInterface()->RegisterListener(OnMessage);
 
     return true;
