@@ -106,7 +106,7 @@ public:
                 if (isPressed) {
                     if (EqStr(purpose, "zoom") && !zoom_enabled) {
                         zoom_enabled = true;
-                        //logger::info("Zoom enabled");
+                        logger::info("Zoom enabled");
                     } else if (EqStr(purpose, "zoom+") &&
                                (zoom_enabled || _device == 2 && settings->gamepad[0].second < 0 ||
                                 _device == 1 && settings->keyboard[0].second < 0)) {
@@ -119,13 +119,13 @@ public:
                 } else if (isReleased) {
                     if (EqStr(purpose, "zoom")) {
                         zoom_enabled = false;
-                        //logger::info("Zoom disabled");
+                        logger::info("Zoom disabled");
                     } else if (EqStr(purpose, "toggle")) {
                         _toggle = true;
                     }
                 }
                 if (_toggle) {
-                    //logger::info("Toggling camera");
+                    logger::info("Toggling camera");
                     ToggleDialogueCam();
                     _toggle = false;
                 }
@@ -155,6 +155,7 @@ void OnMessage(SKSE::MessagingInterface::Message* message) {
 
 SKSEPluginLoad(const SKSE::LoadInterface* skse) {
     SetupLog();
+    spdlog::set_pattern("%v");
     SKSE::Init(skse);
     logger::info("Plugin loaded.");
     auto loaded = Settings::LoadSettings(); 
