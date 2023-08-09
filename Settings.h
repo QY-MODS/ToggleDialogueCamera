@@ -8,10 +8,6 @@ namespace Settings {
     
     const std::string_view& dialogue_menu_str = "Dialogue Menu";
     constexpr auto path = L"Data/SKSE/Plugins/DialogueCameraToggle.ini";
-    constexpr auto comment_zoom = ";Holding this key enables zoom. Set to -1 to disable.";
-    constexpr auto comment_toggle = ";Press this key to switch between 1st and 3rd person view. Set to -1 to disable.";
-    constexpr auto comment_zoom_plus = ";Key to zoom in. Set to -1 to disable.";
-    constexpr auto comment_zoom_minus = ";Key to zoom out. Set to -1 to disable.";
 
     namespace kb {
         int zoom = 29;

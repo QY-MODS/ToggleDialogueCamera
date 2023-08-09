@@ -61,10 +61,10 @@ bool PlayerCameraZoom(int a_device, bool _in) {
         static_cast<RE::ThirdPersonState*>(player_cam->cameraStates[RE::CameraState::kThirdPerson].get());
     float amount = (a_device % 2) ? 0.1f : 0.025f;
     if (_in) {
-        logger::info("Zooming in.");
+        //logger::info("Zooming in.");
         thirdPersonState->targetZoomOffset = std::max(thirdPersonState->targetZoomOffset - amount, -0.2f);
     } else {
-        logger::info("Zooming out.");
+        //logger::info("Zooming out.");
         thirdPersonState->targetZoomOffset = std::min(thirdPersonState->targetZoomOffset + amount, 1.0f);
     }
     return true;
@@ -106,7 +106,7 @@ public:
                 if (isPressed) {
                     if (EqStr(purpose, "zoom") && !zoom_enabled) {
                         zoom_enabled = true;
-                        logger::info("Zoom enabled");
+                        //logger::info("Zoom enabled");
                     } else if (EqStr(purpose, "zoom+") &&
                                (zoom_enabled || _device == 2 && settings->gamepad[0].second < 0 ||
                                 _device == 1 && settings->keyboard[0].second < 0)) {
@@ -119,13 +119,13 @@ public:
                 } else if (isReleased) {
                     if (EqStr(purpose, "zoom")) {
                         zoom_enabled = false;
-                        logger::info("Zoom disabled");
+                        //logger::info("Zoom disabled");
                     } else if (EqStr(purpose, "toggle")) {
                         _toggle = true;
                     }
                 }
                 if (_toggle) {
-                    logger::info("Toggling camera");
+                    //logger::info("Toggling camera");
                     ToggleDialogueCam();
                     _toggle = false;
                 }
@@ -158,12 +158,10 @@ SKSEPluginLoad(const SKSE::LoadInterface* skse) {
     SKSE::Init(skse);
     logger::info("Plugin loaded.");
     auto loaded = Settings::LoadSettings(); 
-        logger::info("Plugin loaded.");
     if (loaded) logger::info("Settings loaded.");
     else logger::info("Could not load settings.");
     assert(loaded && "Could not load settings from ini file!");
     settings = Settings::Settings::GetSingleton();
-    logger::info("{}.", settings->keyboard[0].second);
     SKSE::GetMessagingInterface()->RegisterListener(OnMessage);
 
     return true;
