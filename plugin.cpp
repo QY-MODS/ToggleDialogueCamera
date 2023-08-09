@@ -6,7 +6,7 @@
 RE::UI* ui = nullptr;
 
 bool zoom_enabled = false;
-
+Settings::Settings* settings = nullptr;
 bool PostPostLoaded = false;
 bool InputLoaded = false;
 
@@ -30,20 +30,20 @@ const char* get_purpose(int dn, int kk) {
     const char* failed = "failed";
     switch (dn) {
         case 0:
-            for (std::size_t i = 0; i < keyboard.size(); ++i) {
-                const auto& pair = keyboard[i];
+            for (std::size_t i = 0; i < settings->keyboard.size(); ++i) {
+                const auto& pair = settings->keyboard[i];
                 if (pair.second == kk) return pair.first;
             }
             return failed;
         case 1:
-            for (std::size_t i = 0; i < mouse.size(); ++i) {
-                const auto& pair = mouse[i];
+            for (std::size_t i = 0; i < settings->mouse.size(); ++i) {
+                const auto& pair = settings->mouse[i];
                 if (pair.second == kk) return pair.first;
             }
             return failed;
         case 2:
-            for (std::size_t i = 0; i < gamepad.size(); ++i) {
-                const auto& pair = gamepad[i];
+            for (std::size_t i = 0; i < settings->gamepad.size(); ++i) {
+                const auto& pair = settings->gamepad[i];
                 if (pair.second == kk) return pair.first;
             }
             return failed;
@@ -62,7 +62,7 @@ bool PlayerCameraZoom(int a_device, bool _in) {
     float amount = (a_device % 2) ? 0.1f : 0.025f;
     if (_in) {
         logger::info("Zooming in.");
-        thirdPersonState->targetZoomOffset = std::max(thirdPersonState->targetZoomOffset - amount, 0.0f);
+        thirdPersonState->targetZoomOffset = std::max(thirdPersonState->targetZoomOffset - amount, -0.2f);
     } else {
         logger::info("Zooming out.");
         thirdPersonState->targetZoomOffset = std::min(thirdPersonState->targetZoomOffset + amount, 1.0f);
@@ -107,9 +107,13 @@ public:
                     if (EqStr(purpose, "zoom") && !zoom_enabled) {
                         zoom_enabled = true;
                         logger::info("Zoom enabled");
-                    } else if (EqStr(purpose, "zoom+") && zoom_enabled) {
+                    } else if (EqStr(purpose, "zoom+") &&
+                               (zoom_enabled || _device == 2 && settings->gamepad[0].second < 0 ||
+                                _device == 1 && settings->keyboard[0].second < 0)) {
                         if (!PlayerCameraZoom(_device, true)) continue;
-                    } else if (EqStr(purpose, "zoom-") && zoom_enabled) {
+                    } else if (EqStr(purpose, "zoom-") &&
+                               (zoom_enabled || _device == 2 && settings->gamepad[0].second < 0 ||
+                                _device == 1 && settings->keyboard[0].second < 0)) {
                         if (!PlayerCameraZoom(_device, false)) continue;
                     }
                 } else if (isReleased) {
@@ -152,10 +156,14 @@ void OnMessage(SKSE::MessagingInterface::Message* message) {
 SKSEPluginLoad(const SKSE::LoadInterface* skse) {
     SetupLog();
     SKSE::Init(skse);
+    logger::info("Plugin loaded.");
     auto loaded = Settings::LoadSettings(); 
-    if (loaded) logger::info("Settings loadedasd.");
+        logger::info("Plugin loaded.");
+    if (loaded) logger::info("Settings loaded.");
     else logger::info("Could not load settings.");
     assert(loaded && "Could not load settings from ini file!");
+    settings = Settings::Settings::GetSingleton();
+    logger::info("{}.", settings->keyboard[0].second);
     SKSE::GetMessagingInterface()->RegisterListener(OnMessage);
 
     return true;
