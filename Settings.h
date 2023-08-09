@@ -31,8 +31,8 @@ namespace Settings {
 
         const char* zoom_str = "L3";
         const char* toggle_str = "R3";
-        const char* zoom_plus_str = "L2";
-		const char* zoom_minus_str = "L1";
+        const char* zoom_plus_str = "R2";
+		const char* zoom_minus_str = "R1";
         
         const auto comment_zoom = std::format(";Holding this key enables zoom. Default is {} ({}).", zoom, zoom_str);
         const auto comment_toggle = std::format(";Default is {} ({}).", toggle, toggle_str);
@@ -42,8 +42,8 @@ namespace Settings {
     };
 
     namespace ms {
-		int zoom_plus = 8;
-		int zoom_minus = 9;
+		int zoom_plus = 264;
+		int zoom_minus = 265;
         const char* zoom_plus_str = "Mouse Wheel Up";
         const char* zoom_minus_str = "Mouse Wheel Down";
 		const auto comment_zoom_plus = std::format(";Default is {} ({}).", zoom_plus, zoom_plus_str);
@@ -84,7 +84,8 @@ namespace Settings {
             return &singleton;
         }
         std::array<KeyValuePair, 2> keyboard = {{{"zoom", kb::zoom}, {"toggle", kb::toggle}}};
-        std::array<KeyValuePair, 2> mouse = {{{"zoom+", ms::zoom_plus}, {"zoom-", ms::zoom_minus}}};  // 8 , 9
+        std::array<KeyValuePair, 2> mouse = {
+            {{"zoom+", ms::zoom_plus - 256}, {"zoom-", ms::zoom_minus - 256}}};  // 8 , 9
         std::array<KeyValuePair, 4> gamepad = {
             {{"zoom", gp::zoom}, {"toggle", gp::toggle}, {"zoom+", gp::zoom_plus}, {"zoom-", gp::zoom_minus}}};  // 64 , 128 , 10 , 512
 
