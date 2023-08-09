@@ -153,7 +153,7 @@ void OnMessage(SKSE::MessagingInterface::Message* message) {
 SKSEPluginLoad(const SKSE::LoadInterface* skse) {
     SetupLog();
     SKSE::Init(skse);
-    Settings::LoadSettings();
+    assert(Settings::LoadSettings() == true && "Could not load settings from ini file!");
     logger::info("Settings loaded.");
     SKSE::GetMessagingInterface()->RegisterListener(OnMessage);
 
