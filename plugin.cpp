@@ -35,9 +35,9 @@ void OnCameraUpdate::Update(RE::TESCamera* a_camera) {
         auto* thirdPersonState = static_cast<RE::ThirdPersonState*>(a_camera->currentState.get());
         if (thirdPersonState->currentZoomOffset < -0.19f) {
             listen_gradual_zoom = false;
-            logger::info("Forcing 1st after gradual");
+            //logger::info("Forcing 1st after gradual");
             RE::PlayerCamera::GetSingleton()->ForceFirstPerson();
-            logger::info("listen_gradual_zoom = false");
+            //logger::info("listen_gradual_zoom = false");
             listen_auto_zoom = true;
         }
     }
@@ -46,7 +46,7 @@ void OnCameraUpdate::Update(RE::TESCamera* a_camera) {
 
 void ToggleDialogueCam() {
     listen_gradual_zoom = false; listen_auto_zoom = false;
-    logger::info("listen_gradual_zoom = false,ToggleDialogueCam");
+    //logger::info("listen_gradual_zoom = false,ToggleDialogueCam");
     auto plyr_c = RE::PlayerCamera::GetSingleton();
     auto thirdPersonState =
         static_cast<RE::ThirdPersonState*>(plyr_c->cameraStates[RE::CameraState::kThirdPerson].get());
@@ -58,9 +58,9 @@ void ToggleDialogueCam() {
         thirdPersonState->savedZoomOffset = thirdPersonState->currentZoomOffset;
         if (!Settings::os::instant_toggle) {
             listen_gradual_zoom = true;
-            logger::info("listen_gradual_zoom = true,ToggleDialogueCam");
+            //logger::info("listen_gradual_zoom = true,ToggleDialogueCam");
             thirdPersonState->targetZoomOffset = -0.2f;
-            logger::info("Player is in 3rd person, gradually zooming in.");
+            //logger::info("Player is in 3rd person, gradually zooming in.");
             return;
         }
         plyr_c->ForceFirstPerson();
@@ -101,7 +101,7 @@ bool EqStr(const char* str1, const char* str2) { return std::strcmp(str1, str2) 
 
 void PlayerCameraZoom(int a_device, bool _in) {
     listen_gradual_zoom = false; listen_auto_zoom = false;
-    logger::info("listen_gradual_zoom = false,PlayerCameraZoom");
+    //logger::info("listen_gradual_zoom = false,PlayerCameraZoom");
     auto player_cam = RE::PlayerCamera::GetSingleton();
     auto is_in_first = player_cam->IsInFirstPerson();
 
@@ -151,11 +151,11 @@ public:
         //if (!ui->IsMenuOpen(Settings::dialogue_menu_str)) return RE::BSEventNotifyControl::kContinue;
 
         if (event->opening && RE::PlayerCamera::GetSingleton()->IsInThirdPerson()){
-            logger::info("Player is in 3rd person, forcing 1st person.(MenuOpenCloseEvent)");
+            //logger::info("Player is in 3rd person, forcing 1st person.(MenuOpenCloseEvent)");
             ToggleDialogueCam();
         } 
         else if (!event->opening && RE::PlayerCamera::GetSingleton()->IsInFirstPerson()) {
-            logger::info("Player is in 1st person, forcing 3rd person.(MenuOpenCloseEvent)");
+            //logger::info("Player is in 1st person, forcing 3rd person.(MenuOpenCloseEvent)");
 			ToggleDialogueCam();
         }
         return RE::BSEventNotifyControl::kContinue;
